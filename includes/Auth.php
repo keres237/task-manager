@@ -9,24 +9,13 @@ class Auth {
     
     private function initSession() {
         if (session_status() === PHP_SESSION_NONE) {
-            // Ensure cookie path covers the application folder so session persists across redirects
-            if (php_sapi_name() !== 'cli' && isset($_SERVER['SCRIPT_NAME'])) {
-                $cookiePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
-                if ($cookiePath === '' || $cookiePath === '/' ) {
-                    $cookiePath = '/';
-                }
-            } else {
-                $cookiePath = '/';
-            }
-
+            $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
             session_set_cookie_params([
                 'lifetime' => 0,
-                'path' => $cookiePath,
-                'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+                'secure' => $secure,
                 'httponly' => true,
                 'samesite' => 'Lax'
             ]);
-
             session_start();
         }
     }
@@ -68,7 +57,7 @@ class Auth {
         }
     }
     
-    public function login($username, $password) {
+    public function login($username, $password, $requireAdmin = false) {
         if (empty($username) || empty($password)) {
             return ['success' => false, 'message' => 'Username and password are required'];
         }
@@ -80,13 +69,19 @@ class Auth {
         if (!$user || !password_verify($password, $user['password'])) {
             return ['success' => false, 'message' => 'Invalid username or password'];
         }
+
+        if ($requireAdmin && !$user['is_admin']) {
+            return ['success' => false, 'message' => 'Admin access required'];
+        }
         
-        // Set session variables
+        // Regenerate session id to prevent fixation and set session variables
+        session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['is_admin'] = $user['is_admin'];
         $_SESSION['logged_in'] = true;
-        
+        $_SESSION['last_activity'] = time();
+
         return ['success' => true, 'message' => 'Login successful'];
     }
     
@@ -103,7 +98,22 @@ class Auth {
     }
     
     public function logout() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Unset all session variables
+        $_SESSION = [];
+
+        // Delete session cookie
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'] ?? '/', $params['domain'] ?? '', $params['secure'] ?? false, $params['httponly'] ?? true);
+
+        // Destroy session data
+        session_unset();
         session_destroy();
+        session_regenerate_id(true);
+
         return ['success' => true, 'message' => 'Logout successful'];
     }
 }

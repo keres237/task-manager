@@ -48,7 +48,7 @@ foreach ($categories as $category) {
             <div class="header-right">
                 <span class="user-greeting">Welcome, <?php echo htmlspecialchars($username); ?></span>
                 <?php if ($isAdmin): ?>
-                    <a href="<?php echo APP_URL; ?>/admin/dashboard.php" class="btn btn-secondary btn-small">Admin</a>
+                    <a href="<?php echo APP_URL; ?>/admin/dashboard.php" class="btn btn-primary btn-small" title="Admin Panel">Admin</a>
                 <?php endif; ?>
                 <a href="<?php echo APP_URL; ?>/task-history.php" class="btn btn-secondary btn-small">History</a>
                 <form method="POST" action="<?php echo APP_URL; ?>/auth/logout.php" style="display: inline;">
@@ -79,7 +79,7 @@ foreach ($categories as $category) {
                                             <div class="task-menu">
                                                 <button class="btn btn-icon btn-menu" onclick="toggleTaskMenu(this)">⋯</button>
                                                 <div class="task-actions-menu" style="display: none;">
-                                                    <button class="action-btn" onclick="openEditTaskModal(<?php echo $task['id']; ?>, '<?php echo htmlspecialchars($task['title'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($task['description'], ENT_QUOTES); ?>')">Update</button>
+                                                    <button class="action-btn" onclick="openEditTaskModal(<?php echo $task['id']; ?>, '<?php echo htmlspecialchars($task['title'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($task['description'], ENT_QUOTES); ?>', <?php echo $category['id']; ?>)">Update</button>
                                                     <button class="action-btn action-danger" onclick="openDeleteConfirm(<?php echo $task['id']; ?>)">Delete</button>
                                                 </div>
                                             </div>
@@ -88,16 +88,7 @@ foreach ($categories as $category) {
                                             <p class="task-description"><?php echo htmlspecialchars($task['description']); ?></p>
                                         <?php endif; ?>
                                         <div class="task-actions">
-                                            <?php if ($category['name'] !== 'Done'): ?>
-                                                <select class="btn btn-small task-move" onchange="moveTask(<?php echo $task['id']; ?>, this.value)">
-                                                    <option value="">Move to...</option>
-                                                    <?php foreach ($categories as $cat): ?>
-                                                        <?php if ($cat['id'] !== $category['id']): ?>
-                                                            <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
-                                                        <?php endif; ?>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            <?php endif; ?>
+                                            <!-- Moved via create form now; move select removed -->
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -117,7 +108,14 @@ foreach ($categories as $category) {
             <span class="close" onclick="closeModal('addTaskModal')">&times;</span>
             <h2>Add New Task</h2>
             <form id="addTaskForm">
-                <input type="hidden" id="categoryIdInput" value="">
+                <div class="form-group">
+                    <label for="categorySelect">Category</label>
+                    <select id="categorySelect" name="category_id" required>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="taskTitle">Task Title</label>
                     <input type="text" id="taskTitle" name="title" required placeholder="Enter task title">
@@ -140,6 +138,14 @@ foreach ($categories as $category) {
             <h2>Edit Task</h2>
             <form id="editTaskForm">
                 <input type="hidden" id="editTaskId" value="">
+                <div class="form-group">
+                    <label for="editCategorySelect">Category</label>
+                    <select id="editCategorySelect" name="category_id" required>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="editTaskTitle">Task Title</label>
                     <input type="text" id="editTaskTitle" name="title" required>
@@ -167,7 +173,6 @@ foreach ($categories as $category) {
             </div>
         </div>
     </div>
-
-    <script src="../scripts/dashboard.js"></script>
+    <script src="scripts/dashboard.js"></script>
 </body>
 </html>

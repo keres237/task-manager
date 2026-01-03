@@ -1,3 +1,5 @@
+console.log('dashboard.js loaded')
+
 function openModal(modalId) {
   document.getElementById(modalId).classList.add("active")
 }
@@ -7,19 +9,27 @@ function closeModal(modalId) {
   // Clear form if closing add/edit modals
   if (modalId === "addTaskModal") {
     document.getElementById("addTaskForm").reset()
-    document.getElementById("categoryIdInput").value = ""
+    const sel = document.getElementById("categorySelect")
+    if (sel) sel.value = ""
   }
 }
 
 function openAddTaskModal(categoryId) {
-  document.getElementById("categoryIdInput").value = categoryId
+  const sel = document.getElementById("categorySelect")
+  if (sel) sel.value = categoryId
   openModal("addTaskModal")
 }
 
-function openEditTaskModal(taskId, title, description) {
+// openEditTaskModal is defined below with dueDate support
+
+function openEditTaskModal(taskId, title, description, categoryId, dueDate) {
   document.getElementById("editTaskId").value = taskId
   document.getElementById("editTaskTitle").value = title
   document.getElementById("editTaskDescription").value = description
+  const sel = document.getElementById('editCategorySelect')
+  if (sel) sel.value = categoryId
+  const dueInput = document.getElementById('editTaskDueDate')
+  if (dueInput) dueInput.value = dueDate || ''
   openModal("editTaskModal")
 }
 
@@ -49,15 +59,18 @@ document.addEventListener("click", (event) => {
   }
 })
 
-document.getElementById("addTaskForm").addEventListener("submit", async (e) => {
-  e.preventDefault()
+const addTaskForm = document.getElementById("addTaskForm")
+if (addTaskForm) {
+  addTaskForm.addEventListener("submit", async (e) => {
+    e.preventDefault()
 
-  const categoryId = document.getElementById("categoryIdInput").value
-  const title = document.getElementById("taskTitle").value
-  const description = document.getElementById("taskDescription").value
+    const categoryId = document.getElementById("categorySelect").value
+    const title = document.getElementById("taskTitle").value
+    const description = document.getElementById("taskDescription").value
+    const dueDate = (document.getElementById('taskDueDate') && document.getElementById('taskDueDate').value) ? document.getElementById('taskDueDate').value : null
 
   try {
-    const response = await fetch("/api/tasks/create.php", {
+    const response = await fetch("api/tasks/create.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -66,6 +79,7 @@ document.getElementById("addTaskForm").addEventListener("submit", async (e) => {
         category_id: categoryId,
         title: title,
         description: description,
+        due_date: dueDate
       }),
     })
 
@@ -80,17 +94,24 @@ document.getElementById("addTaskForm").addEventListener("submit", async (e) => {
   } catch (error) {
     alert("Failed to create task: " + error.message)
   }
-})
+  })
+} else {
+  console.warn('addTaskForm element not found — form listeners not attached')
+}
 
-document.getElementById("editTaskForm").addEventListener("submit", async (e) => {
-  e.preventDefault()
+const editTaskForm = document.getElementById("editTaskForm")
+if (editTaskForm) {
+  editTaskForm.addEventListener("submit", async (e) => {
+    e.preventDefault()
 
-  const taskId = document.getElementById("editTaskId").value
-  const title = document.getElementById("editTaskTitle").value
-  const description = document.getElementById("editTaskDescription").value
+    const taskId = document.getElementById("editTaskId").value
+    const title = document.getElementById("editTaskTitle").value
+    const description = document.getElementById("editTaskDescription").value
+    const categoryId = document.getElementById("editCategorySelect").value
+    const dueDate = (document.getElementById('editTaskDueDate') && document.getElementById('editTaskDueDate').value) ? document.getElementById('editTaskDueDate').value : null
 
   try {
-    const response = await fetch("/api/tasks/update.php", {
+    const response = await fetch("api/tasks/update.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,6 +120,8 @@ document.getElementById("editTaskForm").addEventListener("submit", async (e) => 
         task_id: taskId,
         title: title,
         description: description,
+        category_id: categoryId,
+        due_date: dueDate
       }),
     })
 
@@ -113,7 +136,10 @@ document.getElementById("editTaskForm").addEventListener("submit", async (e) => 
   } catch (error) {
     alert("Failed to update task: " + error.message)
   }
-})
+  })
+} else {
+  console.warn('editTaskForm element not found — form listeners not attached')
+}
 
 function confirmDelete() {
   const taskId = document.getElementById("deleteTaskId").value
@@ -122,7 +148,7 @@ function confirmDelete() {
 
 async function deleteTask(taskId) {
   try {
-    const response = await fetch("/api/tasks/delete.php", {
+    const response = await fetch("api/tasks/delete.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -144,33 +170,7 @@ async function deleteTask(taskId) {
     alert("Failed to delete task: " + error.message)
   }
 }
-
-async function moveTask(taskId, newCategoryId) {
-  if (!newCategoryId) return
-
-  try {
-    const response = await fetch("/api/tasks/move.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        task_id: taskId,
-        category_id: newCategoryId,
-      }),
-    })
-
-    const data = await response.json()
-
-    if (data.success) {
-      location.reload() // Reload to show task moved
-    } else {
-      alert("Error: " + data.message)
-    }
-  } catch (error) {
-    alert("Failed to move task: " + error.message)
-  }
-}
+// moveTask removed — category assignment is handled at creation time via the Add Task modal
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {

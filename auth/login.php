@@ -14,19 +14,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = sanitize($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     
-    $result = $auth->login($username, $password);
+    $requireAdmin = isset($_POST['admin_login']) && $_POST['admin_login'] == '1';
+    $result = $auth->login($username, $password, $requireAdmin);
     
     if ($result['success']) {
-        header('Location: ' . APP_URL . '/admin/dashboard.php');
-        exit();
+            // Redirect based on admin flag
+            if ($auth->isAdmin()) {
+                header('Location: ' . APP_URL . '/admin/dashboard.php');
+            } else {
+                header('Location: ' . APP_URL . '/admin/dashboard.php');
+            }
+            exit();
     } else {
         $error = $result['message'];
     }
 }
 
-// If already logged in, redirect to dashboard
+// If already logged in, redirect to appropriate dashboard
 if ($auth->isLoggedIn()) {
-    header('Location: ' . APP_URL . '/dashboard.php');
+    if ($auth->isAdmin()) {
+        header('Location: ' . APP_URL . '/admin/dashboard.php');
+    } else {
+        header('Location: ' . APP_URL . '/dashboard.php');
+    }
     exit();
 }
 ?>

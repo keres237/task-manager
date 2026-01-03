@@ -20,13 +20,14 @@ $data = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 $taskId = $data['task_id'] ?? null;
 $title = sanitize($data['title'] ?? '');
 $description = sanitize($data['description'] ?? '');
+$categoryId = $data['category_id'] ?? null;
 
 if (!$taskId || !$title) {
     handleError('Task ID and title are required', 400);
 }
 
 $task = new Task($pdo);
-$result = $task->updateTask($taskId, $userId, $title, $description);
+$result = $task->updateTask($taskId, $userId, $title, $description, $categoryId);
 
 if ($result['success']) {
     handleSuccess($result['message']);

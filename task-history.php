@@ -70,17 +70,19 @@ if ($filterAction && in_array($filterAction, ['created', 'updated', 'deleted', '
                 <a href="<?php echo APP_URL; ?>/dashboard.php" class="btn btn-secondary btn-small">Back to Dashboard</a>
                 <h1>Task History</h1>
             </div>
-            <div class="header-right">
-                <form method="GET" class="filter-form">
-                    <select name="action" onchange="this.form.submit()" class="filter-select">
-                        <option value="">All Actions</option>
-                        <option value="created" <?php echo $filterAction === 'created' ? 'selected' : ''; ?>>Created</option>
-                        <option value="updated" <?php echo $filterAction === 'updated' ? 'selected' : ''; ?>>Updated</option>
-                        <option value="deleted" <?php echo $filterAction === 'deleted' ? 'selected' : ''; ?>>Deleted</option>
-                        <option value="moved" <?php echo $filterAction === 'moved' ? 'selected' : ''; ?>>Moved</option>
-                    </select>
-                </form>
-            </div>
+                <div class="header-right">
+                    <?php if ($isAdmin): ?>
+                        <a href="<?php echo APP_URL; ?>/admin/dashboard.php" class="btn btn-primary btn-small" title="Admin Panel">Admin</a>
+                    <?php endif; ?>
+                    <form method="GET" class="filter-form" style="display:inline-block; margin-left:0.5rem;">
+                        <select name="action" onchange="this.form.submit()" class="filter-select">
+                            <option value="">All Actions</option>
+                            <option value="created" <?php echo $filterAction === 'created' ? 'selected' : ''; ?>>Created</option>
+                            <option value="updated" <?php echo $filterAction === 'updated' ? 'selected' : ''; ?>>Updated</option>
+                            <option value="deleted" <?php echo $filterAction === 'deleted' ? 'selected' : ''; ?>>Deleted</option>
+                        </select>
+                    </form>
+                </div>
         </header>
 
         <!-- History List -->

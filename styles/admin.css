@@ -308,6 +308,50 @@ body {
   font-size: 0.85rem;
 }
 
+/* Filters & Form Controls - uniform design */
+.filters-form {
+  gap: 12px;
+  align-items: center;
+}
+.filters-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+}
+.filters-form .form-group label {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+.filters-form input[type="text"],
+.filters-form input[type="search"],
+.filters-form input[type="date"],
+.filters-form select {
+  padding: 0.5rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-gray);
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
+  min-width: 120px;
+  box-shadow: none;
+}
+.filters-form input[type="search"] {
+  width: 100%;
+}
+.filters-form .form-group .btn {
+  margin-top: 6px;
+}
+.filters-form .form-group.flex-grow {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* Small responsive tweaks for filters */
+@media (max-width: 900px) {
+  .filters-form .form-group { min-width: 120px; }
+  .filters-form { gap: 8px; }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .admin-container {

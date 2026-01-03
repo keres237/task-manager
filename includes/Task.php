@@ -6,43 +6,50 @@ class Task {
         $this->pdo = $pdo;
     }
     
-    public function createTask($userId, $categoryId, $title, $description = '') {
+    public function createTask($userId, $categoryId, $title, $description = '', $dueDate = null) {
         try {
             // Get the next position
-            $stmt = $this->pdo->prepare("
-                SELECT COALESCE(MAX(position), -1) + 1 as next_position 
-                FROM tasks 
-                WHERE user_id = ? AND category_id = ?
-            ");
+            $stmt = $this->pdo->prepare(
+                "SELECT COALESCE(MAX(position), -1) + 1 as next_position FROM tasks WHERE user_id = ? AND category_id = ?"
+            );
             $stmt->execute([$userId, $categoryId]);
             $result = $stmt->fetch();
             $nextPosition = $result['next_position'] ?? 0;
-            
-            // Insert task
-            $stmt = $this->pdo->prepare("
-                INSERT INTO tasks (user_id, category_id, title, description, position) 
-                VALUES (?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([$userId, $categoryId, $title, $description, $nextPosition]);
+
+            // Insert task (include due_date if provided)
+            if ($dueDate !== null && $dueDate !== '') {
+                $stmt = $this->pdo->prepare(
+                    "INSERT INTO tasks (user_id, category_id, title, description, position, due_date) VALUES (?, ?, ?, ?, ?, ?)"
+                );
+                $stmt->execute([$userId, $categoryId, $title, $description, $nextPosition, $dueDate]);
+            } else {
+                $stmt = $this->pdo->prepare(
+                    "INSERT INTO tasks (user_id, category_id, title, description, position) VALUES (?, ?, ?, ?, ?)"
+                );
+                $stmt->execute([$userId, $categoryId, $title, $description, $nextPosition]);
+            }
+
             $taskId = $this->pdo->lastInsertId();
-            
+
             // Log to history
-            $this->logHistory($userId, $taskId, 'created', null, [
+            $createdData = [
                 'title' => $title,
                 'description' => $description,
                 'category_id' => $categoryId
-            ]);
-            
+            ];
+            if ($dueDate !== null && $dueDate !== '') $createdData['due_date'] = $dueDate;
+            $this->logHistory($userId, $taskId, 'created', null, $createdData);
+
             return ['success' => true, 'task_id' => $taskId, 'message' => 'Task created successfully'];
         } catch (Exception $e) {
             return ['success' => false, 'message' => 'Failed to create task: ' . $e->getMessage()];
         }
     }
     
-    public function updateTask($taskId, $userId, $title, $description = '') {
+    public function updateTask($taskId, $userId, $title, $description = '', $categoryId = null, $dueDate = null) {
         try {
             // Get old data
-            $stmt = $this->pdo->prepare("SELECT title, description FROM tasks WHERE id = ? AND user_id = ?");
+            $stmt = $this->pdo->prepare("SELECT title, description, category_id, due_date FROM tasks WHERE id = ? AND user_id = ?");
             $stmt->execute([$taskId, $userId]);
             $oldData = $stmt->fetch();
             
@@ -50,19 +57,36 @@ class Task {
                 return ['success' => false, 'message' => 'Task not found'];
             }
             
-            // Update task
-            $stmt = $this->pdo->prepare("
-                UPDATE tasks 
-                SET title = ?, description = ? 
-                WHERE id = ? AND user_id = ?
-            ");
-            $stmt->execute([$title, $description, $taskId, $userId]);
-            
+            // Update task (allow changing category and due_date)
+            $setParts = ['title = ?', 'description = ?'];
+            $params = [$title, $description];
+            if ($categoryId !== null) {
+                $setParts[] = 'category_id = ?';
+                $params[] = $categoryId;
+            }
+            if ($dueDate !== null) {
+                $setParts[] = 'due_date = ?';
+                $params[] = ($dueDate === '' ? null : $dueDate);
+            }
+            $params[] = $taskId;
+            $params[] = $userId;
+
+            $sql = "UPDATE tasks SET " . implode(', ', $setParts) . " WHERE id = ? AND user_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+
             // Log to history
-            $this->logHistory($userId, $taskId, 'updated', $oldData, [
+            $newData = [
                 'title' => $title,
                 'description' => $description
-            ]);
+            ];
+            if ($categoryId !== null) {
+                $newData['category_id'] = $categoryId;
+            }
+            if ($dueDate !== null) {
+                $newData['due_date'] = ($dueDate === '' ? null : $dueDate);
+            }
+            $this->logHistory($userId, $taskId, 'updated', $oldData, $newData);
             
             return ['success' => true, 'message' => 'Task updated successfully'];
         } catch (Exception $e) {
@@ -182,7 +206,6 @@ class Task {
             ");
             $stmt->execute([$taskId, $userId, $action, $oldDataJson, $newDataJson]);
         } catch (Exception $e) {
-            // Silently fail history logging to not break main operations
         }
     }
 }

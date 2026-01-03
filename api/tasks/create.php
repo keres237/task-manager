@@ -1,9 +1,9 @@
 <?php
-require_once 'config/constants.php';
-require_once 'config/database.php';
-require_once 'includes/Auth.php';
-require_once 'includes/Task.php';
-require_once 'includes/functions.php';
+require_once '../../config/constants.php';
+require_once '../../config/database.php';
+require_once '../../includes/Auth.php';
+require_once '../../includes/Task.php';
+require_once '../../includes/functions.php';
 
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

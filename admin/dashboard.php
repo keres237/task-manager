@@ -96,10 +96,10 @@ $history = $stmt->fetchAll();
                 <h2>Admin Panel</h2>
             </div>
             <nav class="sidebar-nav">
-                <a href="#stats" class="nav-link active" data-tab="stats">Statistics</a>
-                <a href="#users" class="nav-link" data-tab="users">Users</a>
-                <a href="#tasks" class="nav-link" data-tab="tasks">Tasks</a>
-                <a href="#history" class="nav-link" data-tab="history">History</a>
+                <a href="dashboard.php" class="nav-link active">Dashboard</a>
+                <a href="users.php" class="nav-link">Users</a>
+                <a href="tasks.php" class="nav-link">Tasks</a>
+                <a href="history.php" class="nav-link">History</a>
             </nav>
             <div class="sidebar-footer">
                 <a href="<?php echo APP_URL; ?>/dashboard.php" class="btn btn-secondary btn-small">Back to Dashboard</a>
