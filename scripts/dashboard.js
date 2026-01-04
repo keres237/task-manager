@@ -179,3 +179,43 @@ document.addEventListener("keydown", (event) => {
     })
   }
 })
+
+// Sidebar toggle logic
+;(function() {
+  const toggle = document.getElementById('sidebarToggle')
+  const body = document.body
+  const STORAGE_KEY = 'tm_sidebar_open'
+
+  function setOpen(open) {
+    if (open) {
+      body.classList.add('sidebar-open')
+    } else {
+      body.classList.remove('sidebar-open')
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, open ? '1' : '0')
+    } catch (e) {}
+  }
+
+  // initialize from storage
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored === '1') setOpen(true)
+  } catch (e) {}
+
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const isOpen = body.classList.contains('sidebar-open')
+      setOpen(!isOpen)
+    })
+  }
+
+  // Close sidebar when clicking outside on small screens
+  document.addEventListener('click', (e) => {
+    if (!body.classList.contains('sidebar-open')) return
+    if (window.innerWidth > 800) return
+    if (!e.target.closest('.sidebar') && !e.target.closest('#sidebarToggle')) {
+      setOpen(false)
+    }
+  })
+})()

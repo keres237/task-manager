@@ -40,9 +40,22 @@ foreach ($categories as $category) {
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-inner">
+                <div class="sidebar-brand">Task Manager</div>
+                <nav class="sidebar-nav">
+                    <a href="<?php echo APP_URL; ?>/task-history.php" class="sidebar-link">History</a>
+                    <form method="POST" action="<?php echo APP_URL; ?>/auth/logout.php" class="sidebar-logout">
+                        <button type="submit" class="btn btn-danger btn-small">Logout</button>
+                    </form>
+                </nav>
+            </div>
+        </aside>
         <!-- Header -->
         <header class="dashboard-header">
             <div class="header-left">
+                <button id="sidebarToggle" class="btn btn-icon" aria-label="Toggle sidebar">☰</button>
                 <h1 class="app-title">Task Manager</h1>
             </div>
             <div class="header-right">
@@ -50,10 +63,6 @@ foreach ($categories as $category) {
                 <?php if ($isAdmin): ?>
                     <a href="<?php echo APP_URL; ?>/admin/dashboard.php" class="btn btn-primary btn-small" title="Admin Panel">Admin</a>
                 <?php endif; ?>
-                <a href="<?php echo APP_URL; ?>/task-history.php" class="btn btn-secondary btn-small">History</a>
-                <form method="POST" action="<?php echo APP_URL; ?>/auth/logout.php" style="display: inline;">
-                    <button type="submit" class="btn btn-danger btn-small">Logout</button>
-                </form>
             </div>
         </header>
 
@@ -88,7 +97,6 @@ foreach ($categories as $category) {
                                             <p class="task-description"><?php echo htmlspecialchars($task['description']); ?></p>
                                         <?php endif; ?>
                                         <div class="task-actions">
-                                            <!-- Moved via create form now; move select removed -->
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

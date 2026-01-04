@@ -64,23 +64,21 @@ task-manager/
 └── README.md
 \`\`\`
 
-## Installation
-
 ### Requirements
 - PHP 7.4 or higher
 - MySQL/MariaDB 5.7 or higher
 - A web server (Apache, Nginx, etc.)
 
-### Steps
+# Steps
 
-1. **Clone or download the project** to your web server directory
+1. Clone or download the project to your web server directory
 
-2. **Create a MySQL database**:
+2. Create a MySQL database:
    \`\`\`sql
    CREATE DATABASE task_manager;
    \`\`\`
 
-3. **Import the database schema**:
+3. Import the database schema:
    - Open `database/schema.sql` in your MySQL client
    - Execute the SQL queries to create tables
 
